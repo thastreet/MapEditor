@@ -1,10 +1,12 @@
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.loadImageBitmap
@@ -53,16 +55,21 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
             copiedImage = it
         })
 
+        fun pasteImageIfNecessary(offset: Offset) {
+            copiedImage?.let {
+                pastedImages = pastedImages.toMutableMap().apply {
+                    set(offset.toIndexPoint(), it)
+                }
+            }
+        }
+
         Box(
             Modifier.fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        copiedImage?.let {
-                            pastedImages = pastedImages.toMutableMap().apply {
-                                set(offset.toIndexPoint(), it)
-                            }
-                        }
-                    }
+                .pointerInput("tap") {
+                    detectTapGestures(onPress = { offset -> pasteImageIfNecessary(offset) })
+                }
+                .pointerInput("drag") {
+                    detectDragGestures(onDrag = { change, _ -> pasteImageIfNecessary(change.position) })
                 }
         ) {
             pastedImages.forEach {
