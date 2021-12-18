@@ -1,7 +1,7 @@
 import Const.CASE_SIZE
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.*
@@ -24,37 +24,63 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
     Window(
         onCloseRequest = onCloseRequest,
         visible = visible,
-        title = "Tileset"
+        title = "Tileset",
+        resizable = false
     ) {
-        val imageBitmap = useResource("map.png") { loadImageBitmap(it) }
+        Box {
+            val scrollBarAlpha = 0.35f
+            val horizontalScrollState = rememberScrollState()
+            val verticalScrollState = rememberScrollState()
 
-        Image(
-            imageBitmap,
-            "Map",
-            Modifier
-                .width(imageBitmap.width.dp)
-                .height(imageBitmap.height.dp)
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        indexPoint = offset.toIndexPoint()
-                        onImageCopied(
-                            CopiedImage(
-                                imageBitmap.getSubImage(indexPoint.toAbsolutePoint()),
-                                indexPoint
+            val imageBitmap = useResource("map.png") { loadImageBitmap(it) }
+            Image(
+                imageBitmap,
+                "Map",
+                Modifier
+                    .width(imageBitmap.width.dp)
+                    .height(imageBitmap.height.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset ->
+                            indexPoint = offset.toIndexPoint()
+                            onImageCopied(
+                                CopiedImage(
+                                    imageBitmap.getSubImage(indexPoint.toAbsolutePoint()),
+                                    indexPoint
+                                )
                             )
-                        )
+                        }
                     }
-                },
-            alignment = Alignment.TopStart,
-            contentScale = ContentScale.None
-        )
-        Canvas(Modifier) {
-            drawRect(
-                color = Color.Red,
-                topLeft = indexPoint.toAbsolutePoint().toOffset(),
-                size = Size(CASE_SIZE.value, CASE_SIZE.value),
-                style = Stroke(width = 2f)
+                    .horizontalScroll(horizontalScrollState)
+                    .verticalScroll(verticalScrollState),
+                alignment = Alignment.TopStart,
+                contentScale = ContentScale.None
             )
+            HorizontalScrollbar(
+                adapter = rememberScrollbarAdapter(horizontalScrollState),
+                modifier = Modifier.align(Alignment.BottomEnd),
+                style = LocalScrollbarStyle.current.copy(
+                    unhoverColor = LocalScrollbarStyle.current.hoverColor.copy(
+                        alpha = scrollBarAlpha
+                    )
+                )
+            )
+            VerticalScrollbar(
+                adapter = rememberScrollbarAdapter(verticalScrollState),
+                modifier = Modifier.align(Alignment.BottomEnd),
+                style = LocalScrollbarStyle.current.copy(
+                    unhoverColor = LocalScrollbarStyle.current.hoverColor.copy(
+                        alpha = scrollBarAlpha
+                    )
+                )
+            )
+            Canvas(Modifier) {
+                drawRect(
+                    color = Color.Red,
+                    topLeft = indexPoint.toAbsolutePoint().toOffset(),
+                    size = Size(CASE_SIZE.value, CASE_SIZE.value),
+                    style = Stroke(width = 2f)
+                )
+            }
         }
     }
 }
