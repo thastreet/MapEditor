@@ -1,0 +1,1 @@
+typealias PastedImages = Map<IndexPoint, CopiedImage>

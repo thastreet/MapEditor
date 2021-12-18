@@ -5,7 +5,7 @@ data class SavedMap(
     val points: Map<IndexPoint, IndexPoint>
 ) {
     companion object {
-        fun from(pastedImages: Map<IndexPoint, CopiedImage>): SavedMap =
+        fun from(pastedImages: PastedImages): SavedMap =
             SavedMap(
                 pastedImages.entries.associate {
                     Pair(it.key, it.value.origin)

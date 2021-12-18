@@ -30,3 +30,11 @@ fun ImageBitmap.getSubImage(absolutePoint: AbsolutePoint): BufferedImage {
         caseSizeInt
     )
 }
+
+fun SavedMap.toPastedImages(imageBitmap: ImageBitmap): PastedImages =
+    points.entries.associate { (destination, origin) ->
+        Pair(
+            destination,
+            CopiedImage(imageBitmap.getSubImage(origin.toAbsolutePoint()), origin)
+        )
+    }

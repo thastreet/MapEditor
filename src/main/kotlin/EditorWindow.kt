@@ -17,17 +17,11 @@ import androidx.compose.ui.window.Window
 fun EditorWindow(onCloseRequest: () -> Unit) {
     var mapOpened: Boolean by remember { mutableStateOf(true) }
     var copiedImage: CopiedImage? by remember { mutableStateOf(null) }
-    var pastedImages: Map<IndexPoint, CopiedImage> by remember { mutableStateOf(emptyMap()) }
+    var pastedImages: PastedImages by remember { mutableStateOf(emptyMap()) }
 
     fun loadMap(savedMap: SavedMap) {
         val imageBitmap = useResource("map.png") { loadImageBitmap(it) }
-
-        pastedImages = savedMap.points.entries.associate { (destination, origin) ->
-            Pair(
-                destination,
-                CopiedImage(imageBitmap.getSubImage(origin.toAbsolutePoint()), origin)
-            )
-        }
+        pastedImages = savedMap.toPastedImages(imageBitmap)
     }
 
     fun clearMap() {
@@ -52,6 +46,7 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
                 Item("Tileset", onClick = { mapOpened = true })
             }
         }
+
         TilesetWindow(mapOpened, {
             mapOpened = false
         }, {
