@@ -1,4 +1,3 @@
-import Const.CASE_SIZE
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -6,8 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.loadImageBitmap
@@ -15,45 +12,21 @@ import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
-import org.jetbrains.skiko.toBufferedImage
-import java.awt.FileDialog
-import java.io.File
 
 @Composable
-fun EditorWindow(onCloseRequest: () -> Unit, onSaveAsClicked: (Map<Point, CopiedImage>) -> Unit) {
+fun EditorWindow(onCloseRequest: () -> Unit) {
     var mapOpened: Boolean by remember { mutableStateOf(true) }
     var copiedImage: CopiedImage? by remember { mutableStateOf(null) }
-    var pastedImages: Map<Point, CopiedImage> by remember { mutableStateOf(emptyMap()) }
+    var pastedImages: Map<IndexPoint, CopiedImage> by remember { mutableStateOf(emptyMap()) }
 
     fun loadMap(savedMap: SavedMap) {
         val imageBitmap = useResource("map.png") { loadImageBitmap(it) }
 
-        val caseSizeInt = CASE_SIZE.value.toInt()
-
-        pastedImages = savedMap.points.entries.associate {
-            val subImage = imageBitmap.asSkiaBitmap().toBufferedImage().getSubimage(
-                it.value.x * caseSizeInt,
-                it.value.y * caseSizeInt,
-                caseSizeInt,
-                caseSizeInt
-            )
-
+        pastedImages = savedMap.points.entries.associate { (destination, origin) ->
             Pair(
-                it.key,
-                CopiedImage(subImage, it.value)
+                destination,
+                CopiedImage(imageBitmap.getSubImage(origin.toAbsolutePoint()), origin)
             )
-        }
-    }
-
-    fun showLoadMapDialog() {
-        FileDialog(ComposeWindow(), "Load", FileDialog.LOAD).apply {
-            isVisible = true
-
-            file?.let { path ->
-                val loadFile = File(directory, path)
-                val savedMap = json.decodeFromString(SavedMap.serializer(), loadFile.readText())
-                loadMap(savedMap)
-            }
         }
     }
 
@@ -68,9 +41,9 @@ fun EditorWindow(onCloseRequest: () -> Unit, onSaveAsClicked: (Map<Point, Copied
         MenuBar {
             Menu("File") {
                 Item("Save As...", onClick = {
-                    onSaveAsClicked(pastedImages)
+                    FileUtil.showSaveAsDialog(SavedMap.from(pastedImages))
                 })
-                Item("Load", onClick = { showLoadMapDialog() })
+                Item("Load", onClick = { FileUtil.showLoadDialog { loadMap(it) } })
             }
             Menu("Edit") {
                 Item("Clear", onClick = { clearMap() })
@@ -98,11 +71,11 @@ fun EditorWindow(onCloseRequest: () -> Unit, onSaveAsClicked: (Map<Point, Copied
                 }
         ) {
             pastedImages.forEach {
-                val position = it.key.toPosition()
+                val absolutePoint = it.key.toAbsolutePoint()
                 Image(
                     it.value.bufferedImage.toComposeImageBitmap(),
                     "",
-                    Modifier.offset(position.x.dp, position.y.dp)
+                    Modifier.offset(absolutePoint.x.dp, absolutePoint.y.dp)
                 )
             }
         }

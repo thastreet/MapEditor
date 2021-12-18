@@ -1,18 +1,32 @@
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asSkiaBitmap
+import org.jetbrains.skiko.toBufferedImage
+import java.awt.image.BufferedImage
 import kotlin.math.roundToInt
 
-fun Point.toPosition(): Point {
+fun IndexPoint.toAbsolutePoint(): AbsolutePoint {
     val caseSizeInt = Const.CASE_SIZE.value.toInt()
-    return Point(x * caseSizeInt, y * caseSizeInt)
+    return AbsolutePoint(x * caseSizeInt, y * caseSizeInt)
 }
 
-fun Point.toOffset(): Offset =
+fun AbsolutePoint.toOffset(): Offset =
     Offset(x.toFloat(), y.toFloat())
 
-fun Offset.toIndexPoint(): Point {
+fun Offset.toIndexPoint(): IndexPoint {
     val caseSizeInt = Const.CASE_SIZE.value.toInt()
-    return Point(
+    return IndexPoint(
         x.roundToInt() / caseSizeInt,
         y.roundToInt() / caseSizeInt
+    )
+}
+
+fun ImageBitmap.getSubImage(absolutePoint: AbsolutePoint): BufferedImage {
+    val caseSizeInt = Const.CASE_SIZE.value.toInt()
+    return asSkiaBitmap().toBufferedImage().getSubimage(
+        absolutePoint.x,
+        absolutePoint.y,
+        caseSizeInt,
+        caseSizeInt
     )
 }

@@ -1,7 +1,4 @@
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class Point(
-    val x: Int = 0,
-    val y: Int = 0
-)
+sealed interface Point {
+    val x: Int
+    val y: Int
+}

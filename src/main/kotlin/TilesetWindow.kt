@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -17,11 +16,10 @@ import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
-import org.jetbrains.skiko.toBufferedImage
 
 @Composable
 fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (CopiedImage) -> Unit) {
-    var indexPoint by remember { mutableStateOf(Point()) }
+    var indexPoint by remember { mutableStateOf(IndexPoint()) }
 
     Window(
         onCloseRequest = onCloseRequest,
@@ -39,17 +37,9 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->
                         indexPoint = offset.toIndexPoint()
-                        val position = indexPoint.toPosition()
-
-                        val caseSizeInt = CASE_SIZE.value.toInt()
                         onImageCopied(
                             CopiedImage(
-                                imageBitmap.asSkiaBitmap().toBufferedImage().getSubimage(
-                                    position.x,
-                                    position.y,
-                                    caseSizeInt,
-                                    caseSizeInt
-                                ),
+                                imageBitmap.getSubImage(indexPoint.toAbsolutePoint()),
                                 indexPoint
                             )
                         )
@@ -61,7 +51,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
         Canvas(Modifier) {
             drawRect(
                 color = Color.Red,
-                topLeft = indexPoint.toPosition().toOffset(),
+                topLeft = indexPoint.toAbsolutePoint().toOffset(),
                 size = Size(CASE_SIZE.value, CASE_SIZE.value),
                 style = Stroke(width = 2f)
             )
