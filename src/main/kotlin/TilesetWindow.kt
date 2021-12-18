@@ -41,7 +41,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                     .height(imageBitmap.height.dp)
                     .pointerInput(Unit) {
                         detectTapGestures { offset ->
-                            indexPoint = offset.toIndexPoint()
+                            indexPoint = offset.copy(x = offset.x + horizontalScrollState.value, y = offset.y + verticalScrollState.value).toIndexPoint()
                             onImageCopied(
                                 CopiedImage(
                                     imageBitmap.getSubImage(indexPoint.toAbsolutePoint()),
@@ -76,7 +76,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
             Canvas(Modifier) {
                 drawRect(
                     color = Color.Red,
-                    topLeft = indexPoint.toAbsolutePoint().toOffset(),
+                    topLeft = indexPoint.toAbsolutePoint().toOffset(extraX = -horizontalScrollState.value, extraY = -verticalScrollState.value),
                     size = Size(CASE_SIZE.value, CASE_SIZE.value),
                     style = Stroke(width = 2f)
                 )
