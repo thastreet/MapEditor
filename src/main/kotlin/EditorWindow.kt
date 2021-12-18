@@ -24,27 +24,35 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
     var mapOpened: Boolean by remember { mutableStateOf(true) }
     var copiedImage: CopiedImage? by remember { mutableStateOf(null) }
     var pastedImages: PastedImages by remember { mutableStateOf(emptyMap()) }
-    val stateStack: Stack<State> by remember { mutableStateOf(Stack<State>().apply {
-        push(State(pastedImages))
-    }) }
+    val stateStack: Stack<State> by remember {
+        mutableStateOf(Stack<State>().apply {
+            push(State(pastedImages))
+        })
+    }
 
     fun loadMap(savedMap: SavedMap) {
+        stateStack.clear()
+
         val imageBitmap = useResource("map.png") { loadImageBitmap(it) }
         pastedImages = savedMap.toPastedImages(imageBitmap)
     }
 
     fun clearMap() {
-        pastedImages = emptyMap()
+        val newState = State(emptyMap())
+        stateStack.push(newState)
+        pastedImages = newState.pastedImages
     }
 
-    fun pasteImageIfNecessary(offset: Offset) {
+    fun pasteImageIfNecessary(offset: Offset, saveState: Boolean) {
         copiedImage?.let {
             val newState = State(
                 pastedImages.toMutableMap().apply {
                     set(offset.toIndexPoint(), it)
                 }
             )
-            stateStack.push(newState)
+            if (saveState) {
+                stateStack.push(newState)
+            }
             pastedImages = newState.pastedImages
         }
     }
@@ -57,15 +65,7 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
 
     Window(
         onCloseRequest = onCloseRequest,
-        title = "Editor",
-        onKeyEvent = {
-            if ((it.isMetaPressed || it.isCtrlPressed) && it.key == Key.Z && it.type == KeyEventType.KeyUp) {
-                undoIfPossible()
-                true
-            } else {
-                false
-            }
-        }
+        title = "Editor"
     ) {
         MenuBar {
             Menu("File") {
@@ -75,7 +75,12 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
                 Item("Load", onClick = { FileDialogUtil.showLoadDialog { loadMap(it) } })
             }
             Menu("Edit") {
-                Item("Clear", onClick = { clearMap() })
+                Item(
+                    "Undo",
+                    enabled = stateStack.size > 1,
+                    shortcut = KeyShortcut(meta = true, key = Key.Z),
+                    onClick = { undoIfPossible() })
+                Item("Clear Map", onClick = { clearMap() })
             }
             Menu("View") {
                 Item("Tileset", onClick = { mapOpened = true })
@@ -91,10 +96,10 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
         Box(
             Modifier.fillMaxSize()
                 .pointerInput("tap") {
-                    detectTapGestures(onPress = { offset -> pasteImageIfNecessary(offset) })
+                    detectTapGestures(onPress = { offset -> pasteImageIfNecessary(offset, true) })
                 }
                 .pointerInput("drag") {
-                    detectDragGestures(onDrag = { change, _ -> pasteImageIfNecessary(change.position) })
+                    detectDragGestures(onDrag = { change, _ -> pasteImageIfNecessary(change.position, false) })
                 }
         ) {
             pastedImages.forEach {
