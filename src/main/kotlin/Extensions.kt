@@ -10,9 +10,6 @@ fun IndexPoint.toAbsolutePoint(): AbsolutePoint {
     return AbsolutePoint(x * caseSizeInt, y * caseSizeInt)
 }
 
-fun AbsolutePoint.toOffset(extraX: Int = 0, extraY: Int = 0): Offset =
-    Offset(x.toFloat() + extraX, y.toFloat() + extraY)
-
 fun Offset.toIndexPoint(): IndexPoint {
     val caseSizeInt = Const.CASE_SIZE.value.toInt()
     return IndexPoint(

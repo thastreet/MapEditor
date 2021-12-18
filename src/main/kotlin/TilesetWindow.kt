@@ -1,5 +1,6 @@
 import Const.CASE_SIZE
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -16,10 +18,12 @@ import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import kotlin.math.abs
 
 @Composable
 fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (CopiedImage) -> Unit) {
-    var indexPoint by remember { mutableStateOf(IndexPoint()) }
+    var originIndexPoint: IndexPoint? by remember { mutableStateOf(null) }
+    var destinationIndexPoint: IndexPoint? by remember { mutableStateOf(null) }
 
     Window(
         onCloseRequest = onCloseRequest,
@@ -39,16 +43,30 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                 Modifier
                     .width(imageBitmap.width.dp)
                     .height(imageBitmap.height.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures { offset ->
-                            indexPoint = offset.copy(x = offset.x + horizontalScrollState.value, y = offset.y + verticalScrollState.value).toIndexPoint()
-                            onImageCopied(
-                                CopiedImage(
-                                    imageBitmap.getSubImage(indexPoint.toAbsolutePoint()),
-                                    indexPoint
+                    .pointerInput("tap") {
+                        detectTapGestures(onPress = { offset ->
+                            originIndexPoint = offset.copy(
+                                x = offset.x + horizontalScrollState.value,
+                                y = offset.y + verticalScrollState.value
+                            ).toIndexPoint().also {
+                                onImageCopied(
+                                    CopiedImage(
+                                        imageBitmap.getSubImage(it.toAbsolutePoint()),
+                                        it
+                                    )
                                 )
-                            )
-                        }
+                            }
+                            destinationIndexPoint = originIndexPoint
+                        })
+                    }
+                    .pointerInput("drag") {
+                        detectDragGestures(onDrag = { change, _ ->
+                            val offset = change.position
+                            destinationIndexPoint = offset.copy(
+                                x = offset.x + horizontalScrollState.value,
+                                y = offset.y + verticalScrollState.value
+                            ).toIndexPoint()
+                        })
                     }
                     .horizontalScroll(horizontalScrollState)
                     .verticalScroll(verticalScrollState),
@@ -73,13 +91,48 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                     )
                 )
             )
-            Canvas(Modifier) {
-                drawRect(
-                    color = Color.Red,
-                    topLeft = indexPoint.toAbsolutePoint().toOffset(extraX = -horizontalScrollState.value, extraY = -verticalScrollState.value),
-                    size = Size(CASE_SIZE.value, CASE_SIZE.value),
-                    style = Stroke(width = 2f)
-                )
+            originIndexPoint?.let { localOriginIndexPoint ->
+                Canvas(Modifier) {
+                    val localDestinationIndexPoint = destinationIndexPoint
+                    val caseSizeFloat = CASE_SIZE.value
+
+                    val width: Float
+                    val height: Float
+                    val rectX: Float
+                    val rectY: Float
+
+                    when {
+                        localDestinationIndexPoint != null -> {
+                            width =
+                                caseSizeFloat + abs(localDestinationIndexPoint.x - localOriginIndexPoint.x) * caseSizeFloat
+                            height =
+                                caseSizeFloat + abs(localDestinationIndexPoint.y - localOriginIndexPoint.y) * caseSizeFloat
+                            rectX =
+                                if (localOriginIndexPoint.x <= localDestinationIndexPoint.x)
+                                    localOriginIndexPoint.toAbsolutePoint().x.toFloat()
+                                else
+                                    localDestinationIndexPoint.toAbsolutePoint().x.toFloat()
+                            rectY =
+                                if (localOriginIndexPoint.y <= localDestinationIndexPoint.y)
+                                    localOriginIndexPoint.toAbsolutePoint().y.toFloat()
+                                else
+                                    localDestinationIndexPoint.toAbsolutePoint().y.toFloat()
+                        }
+                        else -> {
+                            width = caseSizeFloat
+                            height = caseSizeFloat
+                            rectX = localOriginIndexPoint.toAbsolutePoint().x.toFloat()
+                            rectY = localOriginIndexPoint.toAbsolutePoint().y.toFloat()
+                        }
+                    }
+
+                    drawRect(
+                        color = Color.Red,
+                        topLeft = Offset(rectX - horizontalScrollState.value, rectY - verticalScrollState.value),
+                        size = Size(width, height),
+                        style = Stroke(width = 2f)
+                    )
+                }
             }
         }
     }
