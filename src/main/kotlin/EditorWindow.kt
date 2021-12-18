@@ -22,7 +22,7 @@ import java.util.Stack
 @Composable
 fun EditorWindow(onCloseRequest: () -> Unit) {
     var mapOpened: Boolean by remember { mutableStateOf(true) }
-    var copiedImage: CopiedImage? by remember { mutableStateOf(null) }
+    var copiedImages: Set<CopiedImage> by remember { mutableStateOf(emptySet()) }
     var pastedImages: PastedImages by remember { mutableStateOf(emptyMap()) }
     val stateStack: Stack<State> by remember {
         mutableStateOf(Stack<State>().apply {
@@ -44,10 +44,18 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
     }
 
     fun pasteImageIfNecessary(offset: Offset, saveState: Boolean) {
-        copiedImage?.let {
+        copiedImages.takeIf { it.isNotEmpty() }?.let { copiedImages ->
             val newState = State(
                 pastedImages.toMutableMap().apply {
-                    set(offset.toIndexPoint(), it)
+                    val minX = copiedImages.minOfOrNull { it.origin.x } ?: 0
+                    val minY = copiedImages.minOfOrNull { it.origin.y } ?: 0
+
+                    copiedImages.forEach {
+                        val indexPoint = offset.toIndexPoint()
+                        val translatedIndexPoint = IndexPoint(indexPoint.x + (it.origin.x - minX), indexPoint.y + (it.origin.y - minY))
+
+                        set(translatedIndexPoint, it)
+                    }
                 }
             )
             if (saveState) {
@@ -90,7 +98,7 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
         TilesetWindow(mapOpened, {
             mapOpened = false
         }, {
-            copiedImage = it
+            copiedImages = it
         })
 
         Box(

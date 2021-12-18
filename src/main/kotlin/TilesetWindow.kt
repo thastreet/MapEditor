@@ -21,7 +21,7 @@ import androidx.compose.ui.window.Window
 import kotlin.math.abs
 
 @Composable
-fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (CopiedImage) -> Unit) {
+fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (Set<CopiedImage>) -> Unit) {
     var originIndexPoint: IndexPoint? by remember { mutableStateOf(null) }
     var destinationIndexPoint: IndexPoint? by remember { mutableStateOf(null) }
 
@@ -50,9 +50,11 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                                 y = offset.y + verticalScrollState.value
                             ).toIndexPoint().also {
                                 onImageCopied(
-                                    CopiedImage(
-                                        imageBitmap.getSubImage(it.toAbsolutePoint()),
-                                        it
+                                    setOf(
+                                        CopiedImage(
+                                            imageBitmap.getSubImage(it.toAbsolutePoint()),
+                                            it
+                                        )
                                     )
                                 )
                             }
@@ -65,7 +67,30 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                             destinationIndexPoint = offset.copy(
                                 x = offset.x + horizontalScrollState.value,
                                 y = offset.y + verticalScrollState.value
-                            ).toIndexPoint()
+                            ).toIndexPoint().also {
+                                val localOriginIndexPoint = originIndexPoint!!
+
+                                val minX = minOf(localOriginIndexPoint.x, it.x)
+                                val maxX = maxOf(localOriginIndexPoint.x, it.x)
+                                val minY = minOf(localOriginIndexPoint.y, it.y)
+                                val maxY = maxOf(localOriginIndexPoint.y, it.y)
+
+                                val images = mutableSetOf<CopiedImage>()
+
+                                (minX..maxX).forEach { x ->
+                                    (minY..maxY).forEach { y ->
+                                        val point = IndexPoint(x, y)
+                                        images.add(
+                                            CopiedImage(
+                                                imageBitmap.getSubImage(point.toAbsolutePoint()),
+                                                point
+                                            )
+                                        )
+                                    }
+                                }
+
+                                onImageCopied(images)
+                            }
                         })
                     }
                     .horizontalScroll(horizontalScrollState)
