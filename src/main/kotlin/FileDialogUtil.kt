@@ -2,7 +2,7 @@ import androidx.compose.ui.awt.ComposeWindow
 import java.awt.FileDialog
 import java.io.File
 
-object FileUtil {
+object FileDialogUtil {
     fun showSaveAsDialog(savedMap: SavedMap) {
         FileDialog(ComposeWindow(), "Save As...", FileDialog.SAVE).apply {
             isVisible = true
