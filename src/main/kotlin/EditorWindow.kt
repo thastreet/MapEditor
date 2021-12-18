@@ -57,6 +57,10 @@ fun EditorWindow(onCloseRequest: () -> Unit, onSaveAsClicked: (Map<Point, Copied
         }
     }
 
+    fun clearMap() {
+        pastedImages = emptyMap()
+    }
+
     Window(
         onCloseRequest = onCloseRequest,
         title = "Editor"
@@ -66,7 +70,10 @@ fun EditorWindow(onCloseRequest: () -> Unit, onSaveAsClicked: (Map<Point, Copied
                 Item("Save As...", onClick = {
                     onSaveAsClicked(pastedImages)
                 })
-                Item("Load", onClick = ::showLoadMapDialog)
+                Item("Load", onClick = { showLoadMapDialog() })
+            }
+            Menu("Edit") {
+                Item("Clear", onClick = { clearMap() })
             }
             Menu("View") {
                 Item("Tileset", onClick = { mapOpened = true })
