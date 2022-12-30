@@ -119,42 +119,41 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
             originIndexPoint?.let { localOriginIndexPoint ->
                 Canvas(Modifier) {
                     val localDestinationIndexPoint = destinationIndexPoint
-                    val caseSizeFloat = CASE_SIZE.value
 
-                    val width: Float
-                    val height: Float
-                    val rectX: Float
-                    val rectY: Float
+                    val width: Int
+                    val height: Int
+                    val rectX: Int
+                    val rectY: Int
 
                     when {
                         localDestinationIndexPoint != null -> {
                             width =
-                                caseSizeFloat + abs(localDestinationIndexPoint.x - localOriginIndexPoint.x) * caseSizeFloat
+                                CASE_SIZE + abs(localDestinationIndexPoint.x - localOriginIndexPoint.x) * CASE_SIZE
                             height =
-                                caseSizeFloat + abs(localDestinationIndexPoint.y - localOriginIndexPoint.y) * caseSizeFloat
+                                CASE_SIZE + abs(localDestinationIndexPoint.y - localOriginIndexPoint.y) * CASE_SIZE
                             rectX =
                                 if (localOriginIndexPoint.x <= localDestinationIndexPoint.x)
-                                    localOriginIndexPoint.toAbsolutePoint().x.toFloat()
+                                    localOriginIndexPoint.toAbsolutePoint().x
                                 else
-                                    localDestinationIndexPoint.toAbsolutePoint().x.toFloat()
+                                    localDestinationIndexPoint.toAbsolutePoint().x
                             rectY =
                                 if (localOriginIndexPoint.y <= localDestinationIndexPoint.y)
-                                    localOriginIndexPoint.toAbsolutePoint().y.toFloat()
+                                    localOriginIndexPoint.toAbsolutePoint().y
                                 else
-                                    localDestinationIndexPoint.toAbsolutePoint().y.toFloat()
+                                    localDestinationIndexPoint.toAbsolutePoint().y
                         }
                         else -> {
-                            width = caseSizeFloat
-                            height = caseSizeFloat
-                            rectX = localOriginIndexPoint.toAbsolutePoint().x.toFloat()
-                            rectY = localOriginIndexPoint.toAbsolutePoint().y.toFloat()
+                            width = CASE_SIZE
+                            height = CASE_SIZE
+                            rectX = localOriginIndexPoint.toAbsolutePoint().x
+                            rectY = localOriginIndexPoint.toAbsolutePoint().y
                         }
                     }
 
                     drawRect(
                         color = Color.Red,
-                        topLeft = Offset(rectX - horizontalScrollState.value, rectY - verticalScrollState.value),
-                        size = Size(width, height),
+                        topLeft = Offset(rectX.toFloat() - horizontalScrollState.value, rectY.toFloat() - verticalScrollState.value),
+                        size = Size(width.toFloat(), height.toFloat()),
                         style = Stroke(width = 2f)
                     )
                 }

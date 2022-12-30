@@ -1,3 +1,4 @@
+import Const.CASE_SIZE
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
@@ -5,28 +6,24 @@ import org.jetbrains.skiko.toBufferedImage
 import java.awt.image.BufferedImage
 import kotlin.math.roundToInt
 
-fun IndexPoint.toAbsolutePoint(): AbsolutePoint {
-    val caseSizeInt = Const.CASE_SIZE.value.toInt()
-    return AbsolutePoint(x * caseSizeInt, y * caseSizeInt)
-}
+fun IndexPoint.toAbsolutePoint(): AbsolutePoint =
+    AbsolutePoint(x * CASE_SIZE, y * CASE_SIZE)
 
-fun Offset.toIndexPoint(): IndexPoint {
-    val caseSizeInt = Const.CASE_SIZE.value.toInt()
-    return IndexPoint(
-        x.roundToInt() / caseSizeInt,
-        y.roundToInt() / caseSizeInt
+fun Offset.toIndexPoint(): IndexPoint =
+    IndexPoint(
+        x.roundToInt() / CASE_SIZE,
+        y.roundToInt() / CASE_SIZE
     )
-}
 
-fun ImageBitmap.getSubImage(absolutePoint: AbsolutePoint): BufferedImage {
-    val caseSizeInt = Const.CASE_SIZE.value.toInt()
-    return asSkiaBitmap().toBufferedImage().getSubimage(
-        absolutePoint.x,
-        absolutePoint.y,
-        caseSizeInt,
-        caseSizeInt
-    )
-}
+fun ImageBitmap.getSubImage(absolutePoint: AbsolutePoint): BufferedImage =
+    asSkiaBitmap()
+        .toBufferedImage()
+        .getSubimage(
+            absolutePoint.x,
+            absolutePoint.y,
+            CASE_SIZE,
+            CASE_SIZE
+        )
 
 fun SavedMap.toPastedImages(imageBitmap: ImageBitmap): PastedImages =
     points.entries.associate { (destination, origin) ->
