@@ -3,12 +3,12 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.31"
-    id("org.jetbrains.compose") version "1.0.0"
-    kotlin("plugin.serialization") version "1.5.31"
+    kotlin("jvm") version "1.7.20"
+    id("org.jetbrains.compose") version "1.2.2"
+    kotlin("plugin.serialization") version "1.7.20"
 }
 
-group = "me.mathieularue"
+group = "com.street"
 version = "1.0"
 
 repositories {
@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 }
 
 tasks.withType<KotlinCompile> {

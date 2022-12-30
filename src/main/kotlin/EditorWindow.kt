@@ -11,9 +11,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.useResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import java.util.Stack
@@ -112,10 +112,13 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
         ) {
             pastedImages.forEach {
                 val absolutePoint = it.key.toAbsolutePoint()
+                val offsetX = with(LocalDensity.current) { absolutePoint.x.toDp() }
+                val offsetY = with(LocalDensity.current) { absolutePoint.y.toDp() }
+
                 Image(
                     it.value.bufferedImage.toComposeImageBitmap(),
                     "",
-                    Modifier.offset(absolutePoint.x.dp, absolutePoint.y.dp)
+                    Modifier.offset(offsetX, offsetY)
                 )
             }
         }
