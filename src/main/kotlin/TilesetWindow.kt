@@ -64,33 +64,33 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                     .pointerInput("drag") {
                         detectDragGestures(onDrag = { change, _ ->
                             val offset = change.position
-                            destinationIndexPoint = offset.copy(
-                                x = offset.x + horizontalScrollState.value,
-                                y = offset.y + verticalScrollState.value
-                            ).toIndexPoint().also {
-                                val localOriginIndexPoint = originIndexPoint!!
+                            val localOriginIndexPoint = originIndexPoint ?: return@detectDragGestures
 
-                                val minX = minOf(localOriginIndexPoint.x, it.x)
-                                val maxX = maxOf(localOriginIndexPoint.x, it.x)
-                                val minY = minOf(localOriginIndexPoint.y, it.y)
-                                val maxY = maxOf(localOriginIndexPoint.y, it.y)
+                            destinationIndexPoint = offset
+                                .copy(x = offset.x + horizontalScrollState.value, y = offset.y + verticalScrollState.value)
+                                .toIndexPoint()
+                                .also {
+                                    val minX = minOf(localOriginIndexPoint.x, it.x)
+                                    val maxX = maxOf(localOriginIndexPoint.x, it.x)
+                                    val minY = minOf(localOriginIndexPoint.y, it.y)
+                                    val maxY = maxOf(localOriginIndexPoint.y, it.y)
 
-                                val images = mutableSetOf<CopiedImage>()
+                                    val images = mutableSetOf<CopiedImage>()
 
-                                (minX..maxX).forEach { x ->
-                                    (minY..maxY).forEach { y ->
-                                        val point = IndexPoint(x, y)
-                                        images.add(
-                                            CopiedImage(
-                                                imageBitmap.getSubImage(point.toAbsolutePoint()),
-                                                point
+                                    (minX..maxX).forEach { x ->
+                                        (minY..maxY).forEach { y ->
+                                            val point = IndexPoint(x, y)
+                                            images.add(
+                                                CopiedImage(
+                                                    imageBitmap.getSubImage(point.toAbsolutePoint()),
+                                                    point
+                                                )
                                             )
-                                        )
+                                        }
                                     }
-                                }
 
-                                onImageCopied(images)
-                            }
+                                    onImageCopied(images)
+                                }
                         })
                     }
                     .horizontalScroll(horizontalScrollState)
@@ -142,6 +142,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                                 else
                                     localDestinationIndexPoint.toAbsolutePoint().y
                         }
+
                         else -> {
                             width = CASE_SIZE
                             height = CASE_SIZE
