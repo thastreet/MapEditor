@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalDensity
@@ -25,6 +26,7 @@ import java.util.Stack
 @Composable
 fun EditorWindow(onCloseRequest: () -> Unit) {
     var mapOpened: Boolean by remember { mutableStateOf(true) }
+    var collisionsMode: Boolean by remember { mutableStateOf(false) }
     var copiedImages: Set<CopiedImage> by remember { mutableStateOf(emptySet()) }
     var pastedImages: PastedImages by remember { mutableStateOf(emptyMap()) }
     val stateStack: Stack<State> by remember {
@@ -46,25 +48,44 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
         pastedImages = newState.pastedImages
     }
 
-    fun pasteImageIfNecessary(offset: Offset, saveState: Boolean) {
-        copiedImages.takeIf { it.isNotEmpty() }?.let { copiedImages ->
-            val newState = State(
-                pastedImages.toMutableMap().apply {
-                    val minX = copiedImages.minOfOrNull { it.origin.x } ?: 0
-                    val minY = copiedImages.minOfOrNull { it.origin.y } ?: 0
+    fun pasteImageIfNecessary(offset: Offset) {
+        copiedImages
+            .takeIf { it.isNotEmpty() }
+            ?.let { copiedImages ->
+                val newState = State(
+                    pastedImages.toMutableMap().apply {
+                        val minX = copiedImages.minOfOrNull { it.origin.x } ?: 0
+                        val minY = copiedImages.minOfOrNull { it.origin.y } ?: 0
 
-                    copiedImages.forEach {
-                        val indexPoint = offset.toIndexPoint()
-                        val translatedIndexPoint = IndexPoint(indexPoint.x + (it.origin.x - minX), indexPoint.y + (it.origin.y - minY))
+                        copiedImages.forEach {
+                            val indexPoint = offset.toIndexPoint()
+                            val translatedIndexPoint = IndexPoint(indexPoint.x + (it.origin.x - minX), indexPoint.y + (it.origin.y - minY))
 
-                        set(translatedIndexPoint, it)
+                            set(translatedIndexPoint, it)
+                        }
                     }
-                }
-            )
-            if (saveState) {
-                stateStack.push(newState)
+                )
+                pastedImages = newState.pastedImages
             }
-            pastedImages = newState.pastedImages
+    }
+
+    fun saveState() {
+        stateStack.push(State(pastedImages))
+    }
+
+    fun onTapped(offset: Offset) {
+        if (collisionsMode) {
+
+        } else {
+            pasteImageIfNecessary(offset)
+        }
+    }
+
+    fun onDragged(change: PointerInputChange) {
+        if (collisionsMode) {
+
+        } else {
+            pasteImageIfNecessary(change.position)
         }
     }
 
@@ -92,6 +113,9 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
                     shortcut = KeyShortcut(meta = true, key = Key.Z),
                     onClick = { undoIfPossible() })
                 Item("Clear Map", onClick = { clearMap() })
+                CheckboxItem("Collisions", collisionsMode) {
+                    collisionsMode = it
+                }
             }
             Menu("View") {
                 Item("Tileset", onClick = { mapOpened = true })
@@ -107,10 +131,18 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
         Box(
             Modifier.fillMaxSize()
                 .pointerInput("tap") {
-                    detectTapGestures(onPress = { offset -> pasteImageIfNecessary(offset, true) })
+                    detectTapGestures(
+                        onPress = { offset ->
+                            onTapped(offset)
+                            saveState()
+                        }
+                    )
                 }
                 .pointerInput("drag") {
-                    detectDragGestures(onDrag = { change, _ -> pasteImageIfNecessary(change.position, false) })
+                    detectDragGestures(
+                        onDrag = { change, _ -> onDragged(change) },
+                        onDragEnd = ::saveState
+                    )
                 }
         ) {
             pastedImages.forEach {
