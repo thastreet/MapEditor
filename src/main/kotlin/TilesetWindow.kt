@@ -1,3 +1,4 @@
+
 import Const.CASE_SIZE
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.HorizontalScrollbar
@@ -8,8 +9,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
@@ -28,7 +28,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.useResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import kotlin.math.abs
 
@@ -54,8 +53,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                 imageBitmap,
                 "Map",
                 Modifier
-                    .width(imageBitmap.width.dp)
-                    .height(imageBitmap.height.dp)
+                    .fillMaxSize()
                     .pointerInput("tap") {
                         detectTapGestures(onPress = { offset ->
                             originIndexPoint = offset.copy(
