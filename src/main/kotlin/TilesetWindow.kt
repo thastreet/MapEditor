@@ -44,7 +44,6 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
         resizable = false
     ) {
         Box {
-            val scrollBarAlpha = 0.35f
             val horizontalScrollState = rememberScrollState()
             val verticalScrollState = rememberScrollState()
 
@@ -115,7 +114,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                 modifier = Modifier.align(Alignment.BottomEnd),
                 style = LocalScrollbarStyle.current.copy(
                     unhoverColor = LocalScrollbarStyle.current.hoverColor.copy(
-                        alpha = scrollBarAlpha
+                        alpha = Const.COMPONENT_ALPHA
                     )
                 )
             )
@@ -124,7 +123,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
                 modifier = Modifier.align(Alignment.BottomEnd),
                 style = LocalScrollbarStyle.current.copy(
                     unhoverColor = LocalScrollbarStyle.current.hoverColor.copy(
-                        alpha = scrollBarAlpha
+                        alpha = Const.COMPONENT_ALPHA
                     )
                 )
             )
