@@ -2,14 +2,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SavedMap(
-    val points: Map<IndexPoint, IndexPoint>
+    val points: Map<IndexPoint, IndexPoint>,
+    val collisions: Set<IndexPoint>
 ) {
     companion object {
-        fun from(pastedImages: PastedImages): SavedMap =
+        fun from(pastedImages: PastedImages, collisions: Set<IndexPoint>): SavedMap =
             SavedMap(
-                pastedImages.entries.associate {
-                    Pair(it.key, it.value.origin)
-                }
+                pastedImages.mapValues { it.value.origin },
+                collisions
             )
     }
 }

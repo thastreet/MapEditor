@@ -40,6 +40,7 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
 
         val imageBitmap = useResource("map.png") { loadImageBitmap(it) }
         pastedImages = savedMap.toPastedImages(imageBitmap)
+        collisions = savedMap.collisions
     }
 
     fun clearMap() {
@@ -115,7 +116,7 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
         MenuBar {
             Menu("File") {
                 Item("Save As...", onClick = {
-                    FileDialogUtil.showSaveAsDialog(SavedMap.from(pastedImages))
+                    FileDialogUtil.showSaveAsDialog(SavedMap.from(pastedImages, collisions))
                 })
                 Item("Load", onClick = { FileDialogUtil.showLoadDialog { loadMap(it) } })
             }
