@@ -1,4 +1,3 @@
-
 import Const.CASE_SIZE
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.HorizontalScrollbar
@@ -23,7 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.res.loadImageBitmap
@@ -50,7 +51,7 @@ fun TilesetWindow(visible: Boolean, onCloseRequest: () -> Unit, onImageCopied: (
             val imageBitmap = useResource("map.png") { loadImageBitmap(it) }
 
             Image(
-                imageBitmap,
+                BitmapPainter(imageBitmap, filterQuality = FilterQuality.None),
                 "Map",
                 Modifier
                     .fillMaxSize()

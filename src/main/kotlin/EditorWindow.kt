@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
@@ -117,7 +119,7 @@ fun EditorWindow(onCloseRequest: () -> Unit) {
                 val offsetY = with(LocalDensity.current) { absolutePoint.y.toDp() }
 
                 Image(
-                    bitmap = it.value.bufferedImage.toComposeImageBitmap(),
+                    painter = BitmapPainter(it.value.bufferedImage.toComposeImageBitmap(), filterQuality = FilterQuality.None),
                     contentDescription = null,
                     modifier = Modifier.offset(offsetX, offsetY),
                     contentScale = FixedScale(Const.SCALE)
